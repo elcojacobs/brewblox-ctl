@@ -53,6 +53,9 @@ class TraefikConfig(BaseModel):
     tls: bool = Field(default=True,
                       title='Enable/disable TLS termination for the HTTPS port',
                       description='This can be disabled when TLS termination is handled by another proxy.')
+    redirect_http: bool = Field(default=True,
+                                title='Redirect HTTP requests to HTTPS and the HTTPS port',
+                                description='This option should not be disabled while authentication is enabled.')
     static_config_file: str = Field(default='/config/traefik.yml',
                                     title='Path to the static Traefik configuration file',
                                     description='This is the path inside the `traefik` service. ' +
