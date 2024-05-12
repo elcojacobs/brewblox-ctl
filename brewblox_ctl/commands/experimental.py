@@ -37,7 +37,7 @@ def experimental():
               help='Static controller URL. This will only be used for the initial credential exchange.')
 @click.option('--cert-file',
               type=click.Path(exists=True, resolve_path=True, path_type=Path),
-              default='./traefik/brewblox.crt',
+              default='./traefik/minica.pem',
               help='Path to broker certificate.')
 @click.option('--device-id',
               help='Manually set the device ID. '
