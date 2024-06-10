@@ -213,6 +213,9 @@ def edit_avahi_config():
     config = utils.get_config()
     fpath = Path('/etc/avahi/avahi-daemon.conf')
 
+    def sbool(v: bool) -> str:
+        return 'yes' if v else 'no'
+
     if not config.avahi.managed or not utils.file_exists(fpath):
         return
 
@@ -222,7 +225,7 @@ def edit_avahi_config():
     copy = deepcopy(avahi_config)
     avahi_config.setdefault('server', {}).setdefault('use-ipv6', 'no')
     avahi_config.setdefault('publish', {}).setdefault('publish-aaaa-on-ipv4', 'no')
-    avahi_config.setdefault('reflector', {}).setdefault('enable-reflector', 'yes')
+    avahi_config.setdefault('reflector', {})['enable-reflector'] = sbool(config.avahi.reflection)
 
     if avahi_config == copy:
         return
@@ -235,7 +238,7 @@ def edit_avahi_config():
         utils.info('Restarting avahi-daemon service ...')
         utils.sh('sudo systemctl restart avahi-daemon')
     else:
-        utils.warn('"systemctl" command not found. Please restart your machine to enable Wifi discovery.')
+        utils.warn('"systemctl" command not found. Please restart your machine to apply Avahi config.')
 
 
 def edit_sshd_config():
