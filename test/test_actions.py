@@ -255,10 +255,20 @@ def test_edit_avahi_config(mocker: MockerFixture,
     # File is found for other tests
     m_file_exists.return_value = True
 
-    # Empty config
+    # Noop for empty config and default settings
     m_sh.reset_mock()
     m_warn.reset_mock()
     config.clear()
+    actions.edit_avahi_config()
+    assert m_sh.call_count == 0
+    assert m_warn.call_count == 0
+
+    # Change config if set
+    m_sh.reset_mock()
+    m_warn.reset_mock()
+    config['server'] = {'use-ipv6': 'no'}
+    config['publish'] = {'publish-aaaa-on-ipv4': 'no'}
+    config['reflector'] = {'enable-reflector': 'yes'}
     actions.edit_avahi_config()
     assert m_sh.call_count == 1
     assert m_warn.call_count == 0
@@ -278,8 +288,9 @@ def test_edit_avahi_config(mocker: MockerFixture,
     # Service command does not exist
     m_sh.reset_mock()
     m_warn.reset_mock()
-    m_command_exists.return_value = False
     config.clear()
+    config['reflector'] = {'enable-reflector': 'yes'}
+    m_command_exists.return_value = False
     actions.edit_avahi_config()
     assert m_sh.call_count == 0
     assert m_warn.call_count == 1
