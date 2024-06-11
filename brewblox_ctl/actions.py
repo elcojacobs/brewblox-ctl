@@ -245,7 +245,7 @@ def edit_avahi_config():
 
     if utils.command_exists('systemctl'):
         utils.info('Restarting avahi-daemon service ...')
-        utils.sh('sudo systemctl restart avahi-daemon')
+        utils.sh('sudo systemctl restart avahi-daemon', check=False)
     else:
         utils.warn('"systemctl" command not found. Please restart your machine to apply Avahi config.')
 
