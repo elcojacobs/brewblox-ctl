@@ -252,16 +252,8 @@ def test_edit_avahi_config(mocker: MockerFixture,
     assert m_warn.call_count == 0
     assert m_sh.call_count == 0
 
-    # By default, the value is not set
-    # Do not change an explicit 'no' value
+    # File is found for other tests
     m_file_exists.return_value = True
-    m_sh.reset_mock()
-    m_warn.reset_mock()
-    config['reflector'] = {'enable-reflector': 'no'}
-    actions.edit_avahi_config()
-    assert m_sh.call_count == 1
-    assert m_warn.call_count == 0
-    assert config['reflector']['enable-reflector'] == 'no'
 
     # Empty config
     m_sh.reset_mock()
@@ -270,18 +262,18 @@ def test_edit_avahi_config(mocker: MockerFixture,
     actions.edit_avahi_config()
     assert m_sh.call_count == 1
     assert m_warn.call_count == 0
-    assert config['reflector']['enable-reflector'] == 'yes'
+    assert config['reflector']['enable-reflector'] == 'no'
 
     # Abort if no changes were made
     m_sh.reset_mock()
     m_warn.reset_mock()
     config['server'] = {'use-ipv6': 'no'}
     config['publish'] = {'publish-aaaa-on-ipv4': 'no'}
-    config['reflector'] = {'enable-reflector': 'yes'}
+    config['reflector'] = {'enable-reflector': 'no'}
     actions.edit_avahi_config()
     assert m_sh.call_count == 0
     assert m_warn.call_count == 0
-    assert config['reflector']['enable-reflector'] == 'yes'
+    assert config['reflector']['enable-reflector'] == 'no'
 
     # Service command does not exist
     m_sh.reset_mock()
@@ -291,7 +283,7 @@ def test_edit_avahi_config(mocker: MockerFixture,
     actions.edit_avahi_config()
     assert m_sh.call_count == 0
     assert m_warn.call_count == 1
-    assert config['reflector']['enable-reflector'] == 'yes'
+    assert config['reflector']['enable-reflector'] == 'no'
 
 
 def test_edit_sshd_config(m_sh: Mock,
