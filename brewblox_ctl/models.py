@@ -4,6 +4,16 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
+def physical_interfaces() -> List[str]:
+    """Infers list of network interfaces connected to a physical component.
+
+    All network interfaces are listed in /sys/class/net/.
+    We want to exclude the loopback interface, and all virtual interfaces created by Docker.
+    We do this by only selecting the network interfaces that are linked to a device.
+    """
+    return [v.split('/')[4] for v in glob('/sys/class/net/*/device')]
+
+
 class ComposeConfig(BaseModel):
     project: str = Field(default='brewblox',
                          title='Docker Compose project name',
@@ -40,16 +50,6 @@ class AvahiConfig(BaseModel):
 
 
 class ReflectorConfig(BaseModel):
-
-    @staticmethod
-    def physical_interfaces() -> List[str]:
-        """Infers list of network interfaces connected to a physical component.
-
-        All network interfaces are listed in /sys/class/net/.
-        We want to exclude the loopback interface, and all virtual interfaces created by Docker.
-        """
-        return [v.split('/')[4] for v in glob('/sys/class/net/*/device')]
-
     enabled: bool = Field(default=True,
                           title='Generate mDNS reflector services',
                           description='Should not be combined with Avahi reflection.')
