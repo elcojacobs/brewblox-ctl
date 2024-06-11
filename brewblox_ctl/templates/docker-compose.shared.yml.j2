@@ -133,8 +133,8 @@ services:
 {% for interface in config.reflector.interfaces %}
   reflector-{{interface}}:
     image: yuxzhu/mdns-reflector:latest
-    restart: unless-stopped
+    restart: on-failure:3
     network_mode: host
-    command: mdns-reflector -fn {{interface}} br-${COMPOSE_PROJECT_NAME}
+    command: mdns-reflector -fn4 {{interface}} br-${COMPOSE_PROJECT_NAME}
 {% endfor %}
 {% endif %}
