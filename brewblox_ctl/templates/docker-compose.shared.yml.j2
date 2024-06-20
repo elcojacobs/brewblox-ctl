@@ -148,6 +148,8 @@ services:
     image: yuxzhu/mdns-reflector:latest
     restart: on-failure:3
     network_mode: host
+    labels:
+      - traefik.enable=false
     command: mdns-reflector -fn4 {{interface}} br-${COMPOSE_PROJECT_NAME}
 
 {% endfor %}
