@@ -58,6 +58,12 @@ class ReflectorConfig(BaseModel):
                                   description='A service will be generated for each interface.')
 
 
+class UsbProxyConfig(BaseModel):
+    enabled: bool = Field(default=False,
+                          title='Enable USB proxy service for Spark 2/3',
+                          description='The Spark service will query the proxy service during discovery.')
+
+
 class SystemConfig(BaseModel):
     apt_upgrade: bool = Field(default=True,
                               title='Enable/disable updating Apt packages during updates')
@@ -122,6 +128,7 @@ class CtlConfig(BaseModel):
     compose: ComposeConfig = Field(default_factory=ComposeConfig)
     avahi: AvahiConfig = Field(default_factory=AvahiConfig)
     reflector: ReflectorConfig = Field(default_factory=ReflectorConfig)
+    usb_proxy: UsbProxyConfig = Field(default_factory=UsbProxyConfig)
     system: SystemConfig = Field(default_factory=SystemConfig)
     auth: AuthConfig = Field(default_factory=AuthConfig)
     traefik: TraefikConfig = Field(default_factory=TraefikConfig)

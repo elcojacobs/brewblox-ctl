@@ -19,7 +19,9 @@ from . import const, utils
 from .models import CtlConfig
 
 JINJA_ENV = jinja2.Environment(loader=jinja2.PackageLoader('brewblox_ctl'),
-                               autoescape=jinja2.select_autoescape())
+                               autoescape=jinja2.select_autoescape(),
+                               trim_blocks=True,
+                               lstrip_blocks=True)
 
 
 def make_dotenv(version: str):

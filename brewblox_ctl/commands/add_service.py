@@ -145,7 +145,6 @@ def add_spark(name: str,
 
     compose['services'][name] = {
         'image': f'ghcr.io/brewblox/brewblox-devcon-spark:{utils.docker_tag(release)}',
-        'privileged': True,
         'restart': 'unless-stopped',
         'environment': environment,
         'volumes': [
