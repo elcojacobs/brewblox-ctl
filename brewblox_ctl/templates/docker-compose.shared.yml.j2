@@ -135,7 +135,7 @@ services:
     restart: unless-stopped
     privileged: true
     labels:
-      - traefik.http.services.usb-proxy.loadbalancer.server.port=5000
+      - traefik.enable=false
     volumes:
       - type: bind
         source: /dev
@@ -148,9 +148,9 @@ services:
     image: yuxzhu/mdns-reflector:latest
     restart: on-failure:3
     network_mode: host
+    command: mdns-reflector -fn4 {{interface}} br-${COMPOSE_PROJECT_NAME}
     labels:
       - traefik.enable=false
-    command: mdns-reflector -fn4 {{interface}} br-${COMPOSE_PROJECT_NAME}
 
 {% endfor %}
 {% endif %}
