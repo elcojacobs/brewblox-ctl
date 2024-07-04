@@ -152,7 +152,7 @@ def enable_spark_mqtt(server_host: Optional[str],
 
     send_cert_cmd = ' '.join([
         'curl -sS -X POST',
-        f'http://{device_host}/mqtt_certificate',
+        f'http://{device_host}/ca_certificate',
         f"-d '{cert}'"
     ])
 
