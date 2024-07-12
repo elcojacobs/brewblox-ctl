@@ -129,7 +129,7 @@ def log(add_compose, add_system, upload):
     for svc in services:
         utils.info(f'Writing {svc} blocks ...')
         header(f'Blocks: {svc}')
-        append(f'{const.CLI} http post --pretty {host_url}/{svc}/blocks/all/read')
+        append(f'{const.CURL} -X POST {host_url}/{svc}/blocks/all/read | python3 -m json.tool')
 
     # Add system diagnostics
     if add_system:
