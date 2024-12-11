@@ -12,6 +12,7 @@ from pytest_mock import MockerFixture
 
 from brewblox_ctl import actions
 from brewblox_ctl.testing import matching
+import contextlib
 
 TESTED = actions.__name__
 
@@ -27,7 +28,7 @@ def test_make_config_dirs(m_sh: Mock):
 
 
 def test_make_tls_certificates(m_sh: Mock, m_file_exists: Mock):
-    m_file_exists.return_value = True
+    m_file_exists.add_existing_files('./traefik/brew.blox/cert.pem', './traefik/minica.der')
 
     actions.make_tls_certificates()
     assert m_sh.call_count == 1
@@ -48,7 +49,7 @@ def test_make_shared_compose(m_write_file: Mock):
 
 
 def test_make_compose(m_read_compose: Mock, m_write_compose: Mock):
-    m_read_compose.side_effect = lambda: {}
+    m_read_compose.side_effect = dict
     actions.make_compose()
     m_write_compose.assert_called_with({'services': {}})
 
@@ -72,11 +73,11 @@ def test_apt_upgrade(m_sh: Mock, m_command_exists: Mock):
 
 
 def test_make_udev_rules(m_sh: Mock, m_file_exists: Mock):
-    m_file_exists.return_value = True
+    m_file_exists.add_existing_files('/etc/udev/rules.d/50-particle.rules')
     actions.make_udev_rules()
     assert m_sh.call_count == 0
 
-    m_file_exists.return_value = False
+    m_file_exists.clear_existing_files()
     actions.make_udev_rules()
     assert m_sh.call_count > 0
 
@@ -97,18 +98,15 @@ def test_install_compose_plugin(m_sh: Mock, m_check_ok: Mock, m_command_exists: 
         actions.install_compose_plugin()
 
 
-def test_check_ports(mocker: MockerFixture,
-                     m_confirm: Mock,
-                     m_getenv: Mock,
-                     m_file_exists: Mock,
-                     m_is_compose_up: Mock):
+def test_check_ports(
+    mocker: MockerFixture, m_confirm: Mock, m_getenv: Mock, m_file_exists: Mock, m_is_compose_up: Mock
+):
     m_net_connections = mocker.patch(TESTED + '.psutil.net_connections', autospec=True)
     m_net_connections.return_value = []
 
     m_getenv.side_effect = lambda k, default: default
     actions.check_ports()
 
-    m_file_exists.return_value = False
     actions.check_ports()
 
     m_is_compose_up.return_value = False
@@ -116,27 +114,33 @@ def test_check_ports(mocker: MockerFixture,
 
     # Find a mapped port
     m_net_connections.return_value = [
-        _common.sconn(fd=0,
-                      family=AF_INET6,
-                      type=SOCK_STREAM,
-                      laddr=_common.addr('::', 1234),
-                      raddr=('::', 44444),
-                      status='ESTABLISHED',
-                      pid=None),
-        _common.sconn(fd=0,
-                      family=AF_INET,
-                      type=SOCK_STREAM,
-                      laddr=_common.addr('0.0.0.0', 80),
-                      raddr=_common.addr('::', 44444),
-                      status='ESTABLISHED',
-                      pid=None),
-        _common.sconn(fd=0,
-                      family=AF_INET6,
-                      type=SOCK_STREAM,
-                      laddr=_common.addr('::', 80),
-                      raddr=_common.addr('::', 44444),
-                      status='ESTABLISHED',
-                      pid=None),
+        _common.sconn(
+            fd=0,
+            family=AF_INET6,
+            type=SOCK_STREAM,
+            laddr=_common.addr('::', 1234),
+            raddr=('::', 44444),
+            status='ESTABLISHED',
+            pid=None,
+        ),
+        _common.sconn(
+            fd=0,
+            family=AF_INET,
+            type=SOCK_STREAM,
+            laddr=_common.addr('0.0.0.0', 80),
+            raddr=_common.addr('::', 44444),
+            status='ESTABLISHED',
+            pid=None,
+        ),
+        _common.sconn(
+            fd=0,
+            family=AF_INET6,
+            type=SOCK_STREAM,
+            laddr=_common.addr('::', 80),
+            raddr=_common.addr('::', 44444),
+            status='ESTABLISHED',
+            pid=None,
+        ),
     ]
     actions.check_ports()
 
@@ -153,27 +157,43 @@ def test_check_ports(mocker: MockerFixture,
     actions.check_ports()
 
 
-def test_install_ctl_package(m_sh: Mock, m_getenv: Mock, m_user_home_exists: Mock, m_file_exists: Mock):
-    m_getenv.return_value = 'release'
+def test_install_ctl_package(
+    m_sh: Mock, m_get_config: Mock, m_user_home_exists: Mock, m_file_exists: Mock, m_command_exists: Mock
+):
+    config = m_get_config
+
     m_user_home_exists.return_value = True
-    m_file_exists.return_value = True
 
     actions.install_ctl_package()
-    assert m_sh.call_count == 2
+    m_sh.assert_called_with('uv pip install brewblox_ctl "git+https://github.com/brewblox/brewblox-ctl@edge"')
 
     m_sh.reset_mock()
-    actions.install_ctl_package('missing')
-    assert m_sh.call_count == 1
+
+    config.release = 'tag'
+    actions.install_ctl_package()
+    m_sh.assert_called_with('uv pip install brewblox_ctl "git+https://github.com/brewblox/brewblox-ctl@tag"')
 
     m_sh.reset_mock()
-    m_file_exists.return_value = False
-    actions.install_ctl_package('never')
-    assert m_sh.call_count == 1
 
+    config.ctl_release = 'ctl_tag'
+    m_file_exists.add_existing_files('./brewblox-ctl.tar.gz')
+    actions.install_ctl_package()
+    m_sh.assert_any_call('rm -f ./brewblox-ctl.tar.gz')
+    m_sh.assert_called_with('uv pip install brewblox_ctl "git+https://github.com/brewblox/brewblox-ctl@ctl_tag"')
+    # uv was already installed
+    uv_from_script = 'wget -qO- https://astral.sh/uv/install.sh | sh'
+    uv_from_pip = 'pip install uv'
+    assert not any(call[0][0] == uv_from_script for call in m_sh.call_args_list), 'Unexpected uv install from script'
+    assert not any(call[0][0] == uv_from_pip for call in m_sh.call_args_list), 'Unexpected uv install from pip'
 
-def test_uninstall_old_ctl_package(m_sh: Mock):
-    actions.uninstall_old_ctl_package()
-    assert m_sh.call_count > 0
+    # test uv not installed yet
+    m_sh.reset_mock()
+    m_file_exists.clear_existing_files()
+    m_command_exists.return_value = False
+    with contextlib.suppress(SystemExit):
+        actions.install_ctl_package()
+    assert any(call[0][0] == uv_from_script for call in m_sh.call_args_list), 'Expected uv install from script'
+    assert any(call[0][0] == uv_from_pip for call in m_sh.call_args_list), 'Expected uv install from pip'
 
 
 def test_deploy_ctl_wrapper(m_sh: Mock, m_user_home_exists: Mock):
@@ -198,19 +218,16 @@ def test_fix_ipv6(m_sh: Mock, m_is_wsl: Mock, m_command_exists: Mock, m_read_fil
         """
         /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
         grep --color=auto dockerd
-        """,   # ps aux
+        """,  # ps aux
         None,  # mkdir
         None,  # touch
         None,  # restart
-
         # with config provided, no restart
         None,  # mkdir
         None,  # touch
-
         # with config, service command not found
         None,  # mkdir
         None,  # touch
-
         # with config, config already set
         None,  # mkdir
         None,  # touch
@@ -234,18 +251,14 @@ def test_fix_ipv6(m_sh: Mock, m_is_wsl: Mock, m_command_exists: Mock, m_read_fil
     assert m_sh.call_count == 4 + 2 + 2 + 2
 
 
-def test_edit_avahi_config(mocker: MockerFixture,
-                           m_sh: Mock,
-                           m_command_exists: Mock,
-                           m_file_exists: Mock,
-                           m_info: Mock,
-                           m_warn: Mock):
+def test_edit_avahi_config(
+    mocker: MockerFixture, m_sh: Mock, m_command_exists: Mock, m_file_exists: Mock, m_info: Mock, m_warn: Mock
+):
     config = ConfigObj()
     m_config = mocker.patch(TESTED + '.ConfigObj')
     m_config.return_value = config
 
     # File not found
-    m_file_exists.return_value = False
     actions.edit_avahi_config()
     assert m_config.call_count == 0
     assert m_info.call_count == 0
@@ -253,7 +266,7 @@ def test_edit_avahi_config(mocker: MockerFixture,
     assert m_sh.call_count == 0
 
     # File is found for other tests
-    m_file_exists.return_value = True
+    m_file_exists.add_existing_files('/etc/avahi/avahi-daemon.conf')
 
     # Noop for empty config and default settings
     m_sh.reset_mock()
@@ -297,26 +310,16 @@ def test_edit_avahi_config(mocker: MockerFixture,
     assert config['reflector']['enable-reflector'] == 'no'
 
 
-def test_edit_sshd_config(m_sh: Mock,
-                          m_command_exists: Mock,
-                          m_file_exists: Mock,
-                          m_read_file_sudo: Mock):
-    lines = '\n'.join([
-        '# Allow client to pass locale environment variables',
-        'AcceptEnv LANG LC_*'
-    ])
-    comment_lines = '\n'.join([
-        '# Allow client to pass locale environment variables',
-        '#AcceptEnv LANG LC_*'
-    ])
+def test_edit_sshd_config(m_sh: Mock, m_command_exists: Mock, m_file_exists: Mock, m_read_file_sudo: Mock):
+    lines = '\n'.join(['# Allow client to pass locale environment variables', 'AcceptEnv LANG LC_*'])
+    comment_lines = '\n'.join(['# Allow client to pass locale environment variables', '#AcceptEnv LANG LC_*'])
 
     # File not exists
-    m_file_exists.return_value = False
     actions.edit_sshd_config()
     assert m_sh.call_count == 0
 
     # No change
-    m_file_exists.return_value = True
+    m_file_exists.add_existing_files('/etc/ssh/sshd_config')
     m_read_file_sudo.return_value = comment_lines
     actions.edit_sshd_config()
     assert m_sh.call_count == 0
@@ -338,11 +341,11 @@ def test_start_esptool(m_sh: Mock, m_command_exists: Mock):
     m_command_exists.return_value = False
 
     actions.start_esptool('--chip esp32', 'read_flash', 'coredump.bin')
-    m_sh.assert_called_with('sudo -E env "PATH=$PATH" esptool.py --chip esp32 read_flash coredump.bin')
+    m_sh.assert_called_with('sudo -E env "PATH=$PATH" uv run esptool.py --chip esp32 read_flash coredump.bin')
     assert m_sh.call_count == 2
 
     m_sh.reset_mock()
     m_command_exists.return_value = True
     actions.start_esptool()
-    m_sh.assert_called_with('sudo -E env "PATH=$PATH" esptool.py ')
+    m_sh.assert_called_with('sudo -E env "PATH=$PATH" uv run esptool.py ')
     assert m_sh.call_count == 1
