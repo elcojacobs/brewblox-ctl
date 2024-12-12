@@ -133,7 +133,7 @@ run_ctl() {
     fi
 
     # if no venv found or uv not found, install
-    if [[ ! -d .venv ]] || ! command -v uv >/dev/null 2>&1 || ! uv show brewblox_ctl >/dev/null; then
+    if [[ ! -d .venv ]] || ! command -v uv >/dev/null 2>&1 || ! uv pip show brewblox_ctl >/dev/null; then
         install_ctl
     fi
 
