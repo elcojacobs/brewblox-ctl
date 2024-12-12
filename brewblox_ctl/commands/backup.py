@@ -209,7 +209,7 @@ def load(archive, load_env, load_compose, load_datastore, load_spark, load_node_
                 with suppress(KeyError):
                     del svc['depends_on']
             utils.write_compose(config)
-            utils.sh(f'{sudo}docker compose up -d')
+            utils.docker_up()
         else:
             utils.info('docker-compose.yml file not found in backup archive')
 

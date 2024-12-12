@@ -169,7 +169,7 @@ def add_spark(
     click.echo(f'Added Spark service `{name}`.')
     click.echo('It will automatically show up in the UI.\n')
     if utils.confirm('Do you want to run `brewblox-ctl up` now?'):
-        utils.sh(f'{sudo}docker compose up -d')
+        utils.docker_up()
 
 
 @cli.command()
@@ -221,7 +221,7 @@ def add_tilt(yes):
     click.echo(f'Added Tilt service `{name}`.')
     click.echo('It will automatically show up in the UI.\n')
     if utils.confirm('Do you want to run `brewblox-ctl up` now?'):
-        utils.sh(f'{sudo}docker compose up -d')
+        utils.docker_up()
 
 
 @cli.command()

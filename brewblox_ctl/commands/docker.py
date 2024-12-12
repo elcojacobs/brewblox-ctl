@@ -28,8 +28,7 @@ def up(detach, compose_args):
     """
     utils.check_config()
     utils.confirm_mode()
-    sudo = utils.optsudo()
-    utils.sh(f'{sudo}docker compose up -d ' + ' '.join(list(compose_args)))
+    utils.docker_up(compose_args)
 
 
 @cli.command(
@@ -45,8 +44,7 @@ def down(compose_args):
     """
     utils.check_config()
     utils.confirm_mode()
-    sudo = utils.optsudo()
-    utils.sh(f'{sudo}docker compose down ' + ' '.join(list(compose_args)))
+    utils.docker_down(compose_args)
 
 
 @cli.command(
@@ -65,8 +63,7 @@ def restart(compose_args):
     """
     utils.check_config()
     utils.confirm_mode()
-    sudo = utils.optsudo()
-    utils.sh(f'{sudo}docker compose up -d --force-recreate ' + ' '.join(list(compose_args)))
+    utils.docker_up(['--force-recreate', *list(compose_args)])
 
 
 @cli.command()

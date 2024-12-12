@@ -224,12 +224,38 @@ def is_compose_up():
     return Path('docker-compose.yml').exists() and sh(f'{sudo}docker compose ps -q', capture=True).strip() != ''
 
 
+def docker_down(args=''):
+    sudo = optsudo()
+    try:
+        sh(f'{sudo}docker compose down ' + ' '.join(list(args)))
+    except CalledProcessError as e:
+        error(f'Failed to stop services, error: {e}')
+        if not confirm('A docker service restart might help. Restart docker service?'):
+            raise SystemExit(1) from None
+
+        sh(f'{sudo}service docker restart')
+        info('Retrying service stop ...')
+        try:
+            sh(f'{sudo}docker compose down ' + ' '.join(list(args)))
+        except CalledProcessError as e:
+            error('Failed to stop services again. Please try rebooting.')
+            raise SystemExit(1) from e
+
+
+def docker_up(args=''):
+    sudo = optsudo()
+    try:
+        sh(f'{sudo}docker compose up -d ' + ' '.join(list(args)))
+    except CalledProcessError as e:
+        error(f'Failed to start services, error: {e}')
+        raise SystemExit(1) from e
+
+
 @contextmanager
 def downed_services():
     """
     Ensures services are down during context, and in the previous state afterwards.
     """
-    sudo = optsudo()
 
     try:
         running = is_compose_up()
@@ -240,9 +266,9 @@ def downed_services():
         running = False
 
     if running:
-        sh(f'{sudo}docker compose down')
+        docker_down()
         yield
-        sh(f'{sudo}docker compose up -d')
+        docker_up()
     else:
         yield
 

@@ -303,7 +303,7 @@ def edit_sshd_config():
 def check_ports():
     if utils.is_compose_up():
         utils.info('Stopping services ...')
-        utils.sh(f'{utils.optsudo()}docker compose down')
+        utils.docker_down()
 
     config = utils.get_config()
     ports = config.ports.model_dump().values()

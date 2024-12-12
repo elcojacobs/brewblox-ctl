@@ -2,6 +2,7 @@
 Migration scripts
 """
 
+from subprocess import CalledProcessError
 import click
 from packaging.version import Version
 
@@ -218,7 +219,7 @@ def update(update_ctl, update_ctl_done, pull, migrate, prune, from_version):
     actions.install_compose_plugin()
 
     utils.info('Stopping services ...')
-    utils.sh(f'{sudo}docker compose down')
+    utils.docker_down()
 
     if config.system.apt_upgrade:
         actions.apt_upgrade()
@@ -237,7 +238,7 @@ def update(update_ctl, update_ctl_done, pull, migrate, prune, from_version):
         utils.sh(f'{sudo}docker volume prune -f > /dev/null')
 
     utils.info('Starting services ...')
-    utils.sh(f'{sudo}docker compose up -d')
+    utils.docker_up()
 
     if migrate:
         upped_migrate(prev_version)

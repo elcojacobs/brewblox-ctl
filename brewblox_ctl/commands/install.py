@@ -257,7 +257,7 @@ def install(ctx: click.Context, snapshot_file):
         # Stop after we're sure we have a compose file
         if utils.is_compose_up():
             utils.info('Stopping services ...')
-            utils.sh(f'{sudo}docker compose down --remove-orphans')
+            utils.docker_down('--remove-orphans')
 
         if opts.init_datastore:
             utils.info('Creating datastore directory ...')
