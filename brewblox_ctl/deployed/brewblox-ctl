@@ -82,6 +82,7 @@ install_ctl() {
         else
             log_error "apt not found. Please install git manually and try again. If you are using a Synology NAS, you can install git from the package center's community repo."
             exit 1
+        fi
     fi
 
     # Create venv
