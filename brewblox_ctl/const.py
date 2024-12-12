@@ -43,6 +43,7 @@ APT_DEPENDENCIES = [
     'libssl-dev',
     'libffi-dev',
     'avahi-daemon',
+    'git',
 ]
 
 # USB Vendor / Product IDs
