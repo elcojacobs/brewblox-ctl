@@ -92,7 +92,7 @@ def test_check_system_opts(m_confirm: Mock, m_command_exists: Mock):
     opts = install.InstallOptions()
 
     # no use defaults -> prompt
-    m_command_exists.return_value = True
+    m_command_exists.add_existing_commands('apt-get')
     m_confirm.return_value = True
     opts.check_system_opts()
     assert opts.apt_install is True
@@ -110,7 +110,7 @@ def test_check_system_opts(m_confirm: Mock, m_command_exists: Mock):
     opts.use_defaults = False
     m_confirm.reset_mock()
     m_confirm.return_value = True
-    m_command_exists.return_value = False
+    m_command_exists.clear_existing_commands()
     opts.check_system_opts()
     assert opts.apt_install is False
     assert m_confirm.call_count == 0
@@ -120,7 +120,6 @@ def test_check_docker_opts(m_confirm: Mock, m_command_exists: Mock, m_is_docker_
     opts = install.InstallOptions()
 
     # Clean env -> prompt to install, add, pull
-    m_command_exists.return_value = False
     m_is_docker_user.return_value = False
     m_confirm.return_value = True
     opts.check_docker_opts()
@@ -132,7 +131,6 @@ def test_check_docker_opts(m_confirm: Mock, m_command_exists: Mock, m_is_docker_
     # use_defaults set -> no prompt
     opts.use_defaults = True
     m_confirm.reset_mock()
-    m_command_exists.return_value = False
     m_is_docker_user.return_value = False
     m_confirm.return_value = True
     opts.check_docker_opts()
@@ -144,7 +142,7 @@ def test_check_docker_opts(m_confirm: Mock, m_command_exists: Mock, m_is_docker_
     # existing install -> only pull
     opts.use_defaults = False
     m_confirm.reset_mock()
-    m_command_exists.return_value = True
+    m_command_exists.add_existing_commands('docker')
     m_is_docker_user.return_value = True
     m_confirm.return_value = True
     opts.check_docker_opts()

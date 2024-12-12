@@ -67,13 +67,14 @@ def test_log_service_error(m_read_compose: Mock):
 
 
 def test_coredump(m_start_esptool: Mock, m_file_netcat: Mock, m_command_exists: Mock):
+    m_command_exists.add_existing_commands('esptool.py', 'netcat')
     invoke(diagnostic.coredump)
     assert m_file_netcat.call_count == 1
     assert m_start_esptool.call_count == 1
 
     m_start_esptool.reset_mock()
     m_file_netcat.reset_mock()
-    m_command_exists.return_value = False
+    m_command_exists.clear_existing_commands()
     invoke(diagnostic.coredump, '--no-upload')
     assert m_start_esptool.call_count == 1
     assert m_file_netcat.call_count == 0

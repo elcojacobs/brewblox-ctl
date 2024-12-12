@@ -113,8 +113,25 @@ def m_file_exists(monkeypatch: pytest.MonkeyPatch):
 
 @pytest.fixture(autouse=True)
 def m_command_exists(monkeypatch: pytest.MonkeyPatch):
-    m = Mock(spec=utils.command_exists)
-    m.return_value = True
+    existing_commands = set()
+
+    def command_exists_side_effect(cmd: str) -> bool:
+        return cmd in existing_commands
+
+    m = Mock(spec=utils.command_exists, side_effect=command_exists_side_effect)
+
+    # Add helper methods to update the mock's behavior
+    def add_existing_commands(*commands):
+        nonlocal existing_commands
+        existing_commands.clear()
+        existing_commands.update(commands)
+
+    def clear_existing_commands():
+        existing_commands.clear()
+
+    m.add_existing_commands = add_existing_commands
+    m.clear_existing_commands = clear_existing_commands
+
     monkeypatch.setattr(utils, 'command_exists', m)
     return m
 

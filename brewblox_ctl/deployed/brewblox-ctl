@@ -75,12 +75,11 @@ install_ctl() {
     if ! command -v git >/dev/null 2>&1; then
         log_error "git is required to install brewblox-ctl."
         # check if apt is installed
-        if command -v apt >/dev/null 2>&1; then
+        if command -v apt-get >/dev/null 2>&1; then
             log_info "Installing git with apt..."
-            sudo apt update
-            sudo apt install -y git
+            sudo apt-get update && sudo apt install -y git
         else
-            log_error "apt not found. Please install git manually and try again. If you are using a Synology NAS, you can install git from the package center's community repo."
+            log_error "apt-get not found. Please install git manually and try again. If you are using a Synology NAS, you can install git from the package center's community repo."
             exit 1
         fi
     fi

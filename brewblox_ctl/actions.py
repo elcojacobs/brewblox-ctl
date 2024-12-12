@@ -204,6 +204,16 @@ def install_ctl_package():  # always | missing | never
     if not utils.command_exists('uv'):
         utils.error('Failed to install uv, please install it manually.')
         raise SystemExit(1)
+    if not utils.command_exists('git'):
+        utils.info('git is required to install brewblox-ctl. Installing git ...')
+        if not utils.command_exists('apt-get'):
+            utils.error(
+                'apt-get is not found. Please install git manually.'
+                ' On a synology NAS, you can install it from the package center community repo.'
+            )
+            raise SystemExit(1)
+        utils.sh('sudo apt-get update && sudo apt-get install -y git')
+
     utils.sh(f'uv pip install brewblox_ctl "git+https://github.com/brewblox/brewblox-ctl@{release}"')
 
 

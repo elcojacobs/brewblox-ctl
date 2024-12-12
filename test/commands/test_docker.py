@@ -37,6 +37,7 @@ def test_follow(m_sh: Mock):
 
 
 def test_kill(m_sh: Mock, m_command_exists: Mock):
+    m_command_exists.add_existing_commands('docker', 'netstat')
     invoke(docker.kill)
     m_sh.assert_called_once_with('SUDO docker rm --force $(SUDO docker ps -aq)', check=False)
 
@@ -60,6 +61,7 @@ def test_kill(m_sh: Mock, m_command_exists: Mock):
     assert m_sh.call_count == 6
 
     m_sh.reset_mock()
-    m_command_exists.return_value = False
+    m_command_exists.clear_existing_commands()
+    m_command_exists.add_existing_commands('docker')
     invoke(docker.kill, '--zombies')
     assert m_sh.call_count == 1
