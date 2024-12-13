@@ -214,6 +214,7 @@ def install_ctl_package():  # always | missing | never
             raise SystemExit(1)
         utils.sh('sudo apt-get update && sudo apt-get install -y git')
 
+    utils.sh('uv pip install --upgrade pip')
     utils.sh(f'uv run python3 -m pip install "git+https://github.com/brewblox/brewblox-ctl@{release}"')
 
 
