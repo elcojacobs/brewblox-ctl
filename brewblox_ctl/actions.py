@@ -217,7 +217,7 @@ def install_ctl_package():
 
     try:
         utils.sh('uv self update')
-    except CalledProcessError:
+    except CalledProcessError:  # pragma: no cover
         utils.error(
             'Failed to update uv. Try updating it manually with: wget -qO- https://astral.sh/uv/install.sh | sh'
         )

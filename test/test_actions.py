@@ -177,7 +177,7 @@ def test_install_ctl_package(
     m_sh.reset_mock()
 
     uv_from_script = 'wget -qO- https://astral.sh/uv/install.sh | sh'
-    uv_from_pip = 'pip install uv'
+    uv_from_pip = 'pip install --upgrade uv'
     git_install = 'sudo apt-get update && sudo apt-get install -y git'
 
     # test uv not installed yet
