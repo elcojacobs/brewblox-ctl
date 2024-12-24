@@ -90,14 +90,14 @@ def load(file):
     utils.sh('uv venv')
     if utils.file_exists('requirements.txt'):
         utils.info('Restoring Python packages from requirements.txt')
-        utils.sh('uv pip install --upgrade pip')
-        utils.sh('uv pip install -r requirements.txt')
+        utils.sh('uv pip install --extra-index-url=https://www.piwheels.org/simple --upgrade pip')
+        utils.sh('uv pip install --extra-index-url=https://www.piwheels.org/simple -r requirements.txt')
         utils.sh('rm requirements.txt')
     elif utils.file_exists('brewblox-ctl.tar.gz'):
         utils.info('Restoring Python packages from brewlox-ctl.tar.gz')
         # for backwards compaitibility with older brewblox-ctl versions from snapshot
-        utils.sh('uv pip install --upgrade pip')
-        utils.sh('uv pip install brewblox-ctl.tar.gz')
+        utils.sh('uv pip install --extra-index-url=https://www.piwheels.org/simple --upgrade pip')
+        utils.sh('uv pip install --extra-index-url=https://www.piwheels.org/simple brewblox-ctl.tar.gz')
         utils.sh('rm brewblox-ctl.tar.gz')
     else:
         utils.info(

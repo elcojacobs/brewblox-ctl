@@ -223,7 +223,9 @@ def install_ctl_package():
         )
         raise SystemExit(1) from None
 
-    utils.sh(f'uv pip install "git+https://github.com/brewblox/brewblox-ctl@{release}"')
+    utils.sh(
+        f'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple "git+https://github.com/brewblox/brewblox-ctl@{release}"'
+    )
 
 
 def install_compose_plugin():
