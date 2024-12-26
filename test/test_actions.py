@@ -167,7 +167,7 @@ def test_install_ctl_package(
 
     actions.install_ctl_package()
     m_sh.assert_called_with(
-        'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple "git+https://github.com/brewblox/brewblox-ctl@edge"'
+        'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple --index-strategy=unsafe-best-match "git+https://github.com/brewblox/brewblox-ctl@edge"'
     )
 
     m_sh.reset_mock()
@@ -175,7 +175,7 @@ def test_install_ctl_package(
     config.release = 'tag'
     actions.install_ctl_package()
     m_sh.assert_called_with(
-        'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple "git+https://github.com/brewblox/brewblox-ctl@tag"'
+        'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple --index-strategy=unsafe-best-match "git+https://github.com/brewblox/brewblox-ctl@tag"'
     )
 
     m_sh.reset_mock()
@@ -217,7 +217,7 @@ def test_install_ctl_package(
     actions.install_ctl_package()
     m_sh.assert_any_call('rm -f ./brewblox-ctl.tar.gz')
     m_sh.assert_called_with(
-        'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple "git+https://github.com/brewblox/brewblox-ctl@ctl_tag"'
+        'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple --index-strategy=unsafe-best-match "git+https://github.com/brewblox/brewblox-ctl@ctl_tag"'
     )
     assert not any(call[0][0] == uv_from_script for call in m_sh.call_args_list), 'Unexpected uv install from script'
     assert not any(call[0][0] == uv_from_pip for call in m_sh.call_args_list), 'Unexpected uv install from pip'

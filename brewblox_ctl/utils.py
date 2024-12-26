@@ -345,7 +345,9 @@ def check_ok(cmd: str) -> bool:
 
 def pip_install(*libs):
     return sh(
-        'uv pip install ' + '--upgrade --no-cache --extra-index-url=https://www.piwheels.org/simple' + ' '.join(libs)
+        'uv pip install '
+        + '--upgrade --no-cache --extra-index-url=https://www.piwheels.org/simple --index-strategy=unsafe-best-match'
+        + ' '.join(libs)
     )
 
 

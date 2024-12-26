@@ -224,7 +224,7 @@ def install_ctl_package():
         raise SystemExit(1) from None
 
     utils.sh(
-        f'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple "git+https://github.com/brewblox/brewblox-ctl@{release}"'
+        f'uv pip install --upgrade --extra-index-url=https://www.piwheels.org/simple --index-strategy=unsafe-best-match "git+https://github.com/brewblox/brewblox-ctl@{release}"'
     )
 
 
